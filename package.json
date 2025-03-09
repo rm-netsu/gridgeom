@@ -1,0 +1,29 @@
+{
+	"name": "@rm-netsu/gridgeom",
+	"version": "0.0.1",
+	"description": "Geometry manipulation library",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"imports": {
+		"#*": "./src/*"
+	},
+	"scripts": {
+		"test": "jest",
+		"build": "rm -rf ./dist && tsc -p ./tsconfig.build.json && tsc-alias -p ./tsconfig.build.json"
+	},
+	"author": "rm-netsu",
+	"license": "ISC",
+	"devDependencies": {
+		"@happy-dom/jest-environment": "^17.4.3",
+		"@types/jest": "^29.5.14",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.2.6",
+		"ts-node": "^10.9.2",
+		"tsc-alias": "^1.8.11",
+		"typescript": "^5.8.2"
+	}
+}
