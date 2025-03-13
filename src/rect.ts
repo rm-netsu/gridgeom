@@ -28,6 +28,10 @@ export class Rect implements IEq<IRect>, IMovable<IRect>, ICloneable<IRect> {
 		this.#b = b
 	}
 
+	static from($: IRect) {
+		return new Rect(Point2D.from($.a), Point2D.from($.b))
+	}
+
 	clone() {
 		const rect = new Rect(this.#a.clone(), this.#b.clone())
 		rect.#isNormalized = this.#isNormalized

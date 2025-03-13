@@ -36,6 +36,10 @@ export class Point2D implements
 		this.#y = y
 	}
 
+	static from($: IPoint2D) {
+		return new Point2D($.x, $.y)
+	}
+
 	static fromRelativeMousePosition(el: HTMLElement, e: MouseEvent) {
 		return new Point2D(...getRelativeMousePosition(el, e))
 	}

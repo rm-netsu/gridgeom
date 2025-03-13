@@ -1,6 +1,6 @@
 {
 	"name": "@rm-netsu/gridgeom",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Geometry manipulation library",
 	"type": "module",
 	"files": [
