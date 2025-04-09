@@ -6,12 +6,11 @@ export interface IRect {
 	a: IPoint2D
 	b: IPoint2D
 }
-export type IVec2 = [number, number]
 
 
 export interface IMovable<T> {
 	move(delta: IPoint2D): T
-	snap(): T
+	floor(): T
 }
 export interface IEq<T> {
 	equals(other: T): boolean

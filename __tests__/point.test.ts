@@ -2,7 +2,7 @@ import { Point2D } from '#point'
 
 
 describe('Point2D class', () => {
-	let mockBoundingClientRect: DOMRect = new DOMRect(0, 0, 120, 120)
+	let mockBoundingClientRect: DOMRect = new DOMRect()
 	const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect
 
 	beforeAll(() => {
@@ -12,67 +12,94 @@ describe('Point2D class', () => {
 		Element.prototype.getBoundingClientRect = originalGetBoundingClientRect
 	})
 
-	describe('Point2D()::constructor()', () => {
+	describe('constructor()', () => {
 		it('should create a Point2D instance', () => {
-			const p = new Point2D(3, 14)
+			const [x, y] = [3, 14]
+
+			const p = new Point2D(x, y)
 			expect(p).toBeInstanceOf(Point2D)
-			expect(p.x).toBe(3)
-			expect(p.y).toBe(14)
+			expect(p.x).toBe(x)
+			expect(p.y).toBe(y)
 		})
 	})
 
-	describe('Point2D::fromRelativeMousePosition()', () => {
+	describe('static from()', () => {
+		it('should create a Point2D instance from Point2D-like object', () => {
+			const [x, y] = [3, 14]
+
+			const p = Point2D.from({ x, y })
+			expect(p).toBeInstanceOf(Point2D)
+			expect(p.x).toBe(x)
+			expect(p.y).toBe(y)
+		})
+	})
+
+	describe('static fromRelativeMousePosition()', () => {
 		it('should create a Point2D from relative mouse position', () => {
+			const [x,y, w,h, u,v] = [20,10, 320,200, 0.667,0.25]
+			
 			const el = document.createElement('div')
-			mockBoundingClientRect = new DOMRect(20, 10, 320, 200)
+			mockBoundingClientRect = new DOMRect(x,y, w,h)
 			
 			const event = new MouseEvent('mousemove', {
-				clientX: 20+320*0.667,
-				clientY: 10+200*0.25
+				clientX: x + w*u,
+				clientY: y + h*v
 			})
 
-			const point = Point2D.fromRelativeMousePosition(el, event)
-			expect(point.x).toBeCloseTo(0.667)
-			expect(point.y).toBeCloseTo(0.25)
+			const point = Point2D.fromRelativeMousePosition(event, el)
+			expect(point.x).toBeCloseTo(u)
+			expect(point.y).toBeCloseTo(v)
 		})
 	})
 	
-	describe('Point2D::fromCanvasMousePosition()', () => {
-		it('should create a Point2D from canvas mouse position', () => {
-			const scale = 0.667
+	describe('static fromCanvasMousePosition()', () => {
+		it.each([
+			[20,10, 320,200, 160,42, 0.667],
+			[ 0, 0, 160,140, 159, 0, 1.333],
+		])(
+			'should create a Point2D from canvas mouse position',
+			(x,y, w,h, dx,dy, scale) => {
+				const canvas = document.createElement('canvas')
+				canvas.width = w
+				canvas.height = h
+				mockBoundingClientRect = new DOMRect(
+					x,
+					y,
+					canvas.width * scale,
+					canvas.height * scale
+				)
 
-			const canvas = document.createElement('canvas')
-			canvas.width = 320
-			canvas.height = 200
-			mockBoundingClientRect = new DOMRect(
-				20,
-				10,
-				canvas.width*scale,
-				canvas.height*scale
-			)
-
-			const event = new MouseEvent('mousemove', {
-				clientX: 20+160,
-				clientY: 10+42
-			})
-	
-			const point = Point2D.fromCanvasMousePosition(canvas, event)
-			expect(point.x).toBe(Math.floor(160/scale))
-			expect(point.y).toBe(Math.floor(42/scale))
-		})
+				const event = new MouseEvent('mousemove', {
+					clientX: x + dx,
+					clientY: y + dy
+				})
+		
+				const point = Point2D.fromCanvasMousePosition(event, canvas)
+				expect(point.x).toBe(Math.floor(dx/scale))
+				expect(point.y).toBe(Math.floor(dy/scale))
+			}
+		)
 	})
 
-	describe('Point2D()::delta()', () => {
-		it('should calculate the delta between two points', () => {
-			const p0 = new Point2D(5, 10)
-			const pb = new Point2D(2, 3)
-			const delta = p0.delta(pb)
-			expect(delta.x).toBe(3)
-			expect(delta.y).toBe(7)
-		})
+	describe('delta()', () => {
+		it.each([
+			[ 5, 10,  2, 3],
+			[ 5, 10, -2,-3],
+			[-5,-10,  2, 3],
+			[-5,-10, -2,-3],
+		])(
+			'should calculate the delta between two points',
+			(p0x,p0y, pbx,pby) => {
+				const p0 = new Point2D(p0x, p0y)
+				const pb = new Point2D(pbx, pby)
+				const delta = p0.delta(pb)
+				expect(delta.x).toBe(p0x-pbx)
+				expect(delta.y).toBe(p0y-pby)
+			}
+		)
 	})
 	
-	describe('Point2D()::clone()', () => {
+	describe('clone()', () => {
 		it('should clone a Point2D instance', () => {
 			const point = new Point2D(5, 10)
 			const clonedPoint = point.clone()
@@ -82,37 +109,43 @@ describe('Point2D class', () => {
 		})
 	})
 
-	describe('Point2D::midpoint()', () => {
+	describe('static midpoint()', () => {
 		it('should calculate the midpoint of multiple points', () => {
-			const point1 = new Point2D(0, 2)
-			const point2 = new Point2D(10, 42)
-			const point3 = new Point2D(20, -16)
+			const [p1x,p1y, p2x,p2y, p3x,p3y] = [0,2, 10,42, 20,-16]
+
+			const point1 = new Point2D(p1x, p1y)
+			const point2 = new Point2D(p2x, p2y)
+			const point3 = new Point2D(p3x, p3y)
 			const midpoint = Point2D.midpoint(point1, point2, point3)
-			expect(midpoint.x).toBeCloseTo((0 + 10 + 20) /3)
-			expect(midpoint.y).toBeCloseTo((2 + 42 - 16) /3)
+			expect(midpoint.x).toBeCloseTo((p1x + p2x + p3x) /3)
+			expect(midpoint.y).toBeCloseTo((p1y + p2y + p3y) /3)
 		})
 	})
 	
-	describe('Point2D()::snap()', () => {
+	describe('floor()', () => {
 		it('should snap the point to the nearest integer coordinates', () => {
-			const point = new Point2D(5.7, 10.2)
-			const snappedPoint = point.snap()
-			expect(snappedPoint.x).toBe(5)
-			expect(snappedPoint.y).toBe(10)
+			const [x, y] = [5.7, 10.2]
+
+			const point = new Point2D(x, y)
+			const snappedPoint = point.floor()
+			expect(snappedPoint.x).toBe(Math.floor(x))
+			expect(snappedPoint.y).toBe(Math.floor(y))
 		})
 	})
 	
-	describe('Point2D()::move()', () => {
+	describe('move()', () => {
 		it('should move the point by a delta', () => {
-			const point = new Point2D(5, 10)
-			const delta = new Point2D(2, 3)
+			const [x,y, dx,dy] = [5,10, 2,3]
+
+			const point = new Point2D(x, y)
+			const delta = new Point2D(dx, dy)
 			const movedPoint = point.move(delta)
-			expect(movedPoint.x).toBe(7)
-			expect(movedPoint.y).toBe(13)
+			expect(movedPoint.x).toBe(x+dx)
+			expect(movedPoint.y).toBe(y+dy)
 		})
 	})
 	
-	describe('Point2D()::equals()', () => {
+	describe('equals()', () => {
 		it('should check if two points are equal', () => {
 			const point1 = new Point2D(5, 10)
 			const point2 = new Point2D(5, 10)

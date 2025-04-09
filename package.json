@@ -1,7 +1,7 @@
 {
 	"name": "@rm-netsu/gridgeom",
-	"version": "0.0.3",
-	"description": "Geometry manipulation library",
+	"version": "0.0.4",
+	"description": "Virtual grid manipulation library",
 	"type": "module",
 	"files": [
 		"dist"
@@ -17,6 +17,7 @@
 	},
 	"scripts": {
 		"test": "jest",
+		"test:coverage": "npm test -- --coverage",
 		"build": "rm -rf ./dist && tsc -p ./tsconfig.build.json && tsc-alias -p ./tsconfig.build.json"
 	},
 	"author": "rm-netsu",
